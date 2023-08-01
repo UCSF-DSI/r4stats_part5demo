@@ -1,0 +1,86 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(lmtest)
+```
+
+```{r}
+hrs_df <- read_csv("hrs_analyze.csv")
+hrs_df
+```
+```{r}
+hrs_df <- hrs_df %>%
+  select(female, age_2014, bp_sys, bp_dia) %>%
+  drop_na()
+
+hrs_df
+```
+
+```{r}
+hrs_df %>%
+  ggplot(aes(sample = bp_sys)) +
+    stat_qq() +
+    stat_qq_line()
+```
+
+
+```{r}
+hrs_df %>%
+  ggplot() +
+    geom_point(aes(x = bp_dia, y = bp_sys)) + 
+    geom_abline()
+```
+
+```{r}
+bpfit <- glm(bp_sys ~ bp_dia, data = hrs_df)
+bpfit
+```
+```{r}
+bpfit %>% summary()
+```
+
+```{r}
+bpfit_multi <- glm(bp_sys ~ bp_dia + female + age_2014, data = hrs_df)
+bpfit_multi
+```
+
+```{r}
+bpfit_multi %>%
+  summary()
+```
+
+```{r}
+lrtest(bpfit, bpfit_multi)
+```
+
+```{r}
+bpfit %>%
+  residuals() %>%
+  as_tibble() %>%
+  ggplot() +
+    stat_qq(aes(sample = value)) +
+    stat_qq_line(aes(sample = value))
+```
+
+```{r}
+ggplot() +
+  geom_point(aes(x = fitted(bpfit), y= residuals(bpfit))) +
+  geom_hline(aes(x = fitted(bpfit), y= residuals(bpfit)), yintercept = 0, color = "green")
+```
+
+```{r}
+cor.test(x= fitted(bpfit), y= residuals(bpfit), method="pearson")
+```
+
+
+
+
+
+
+
+
+
